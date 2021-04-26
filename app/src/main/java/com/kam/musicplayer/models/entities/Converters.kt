@@ -3,7 +3,7 @@ package com.kam.musicplayer.models.entities
 import android.net.Uri
 import androidx.room.TypeConverter
 
-class Convertors {
+class Converters {
 
     @TypeConverter
     fun fromStringUri(path: String?): Uri? {
