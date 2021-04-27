@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="BottomSheetView">
+        <attr name="viewToDrag" format="reference" />
+        <attr name="content" format="reference" />
+        <attr name="background_color" format="color" />
+        <attr name="shrink_content_to_above_screen" format="boolean" />
+    </declare-styleable>
+
+    <!-- BottomSheetView Tags -->
+    <item name="tag_bottom_sheet_draggable" type="id" />
+
+</resources>
