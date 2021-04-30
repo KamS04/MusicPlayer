@@ -230,10 +230,10 @@ class BottomSheetView(context: Context, attrs: AttributeSet): LinearLayout(conte
      * in the [BottomSheetView]
      */
     interface OnActionListener {
-        fun onStartDragging(openingSheet: Boolean)
-        fun onSheetClosed()
-        fun onSheetOpened()
-        fun onSetPeekHeight(peekHeight: Int)
+        fun onStartDragging(openingSheet: Boolean) {}
+        fun onSheetClosed() {}
+        fun onSheetOpened() {}
+        fun onSetPeekHeight(peekHeight: Int) {}
     }
 
     /**

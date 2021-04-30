@@ -42,6 +42,15 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // androidx.activity.*
+    def activity_version = "1.2.2"
+    implementation "androidx.activity:activity-ktx:$activity_version"
+
+    // androidx.fragment.*
+    def fragment_version = "1.3.3"
+    implementation "androidx.fragment:fragment-ktx:$fragment_version"
 
     // SDP - A scalable size unit library
     // https://github.com/intuit/sdp

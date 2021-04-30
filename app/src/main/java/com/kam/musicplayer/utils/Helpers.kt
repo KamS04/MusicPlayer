@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.kam.musicplayer.application.MusicApplication
 
@@ -88,3 +89,6 @@ fun View.getChildById(id: Int): View? {
     }
     return null
 }
+
+val Fragment.mContext: Context
+    get() = requireContext()

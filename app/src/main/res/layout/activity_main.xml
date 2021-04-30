@@ -28,14 +28,14 @@
         android:layout_weight="1">
 
         <!-- TODO Main fragment -->
-        <fragment
-            android:id="@+id/main_screen_mf"
+        <FrameLayout
+            android:id="@+id/main_screen_fl"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="top" />
 
         <com.kam.musicplayer.view.customview.BottomSheetView
-            android:id="@+id/play_screen_bsv"
+            android:id="@+id/music_screen_bsv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -43,65 +43,77 @@
 
             android:elevation="12dp">
 
-            <!-- TODO Music Player -->
+            <!-- TODO Mini Music Player -->
             <fragment
-                android:id="@+id/music_screen_mpf"
+                android:id="@+id/mini_mpf"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <com.kam.musicplayer.view.customview.BottomSheetView
-                android:id="@+id/queue_screen_bsv"
+            <androidx.coordinatorlayout.widget.CoordinatorLayout
+                android:id="@+id/queue_screen_cl"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
+                android:layout_height="match_parent">
 
-                >
-
-                <!-- TODO Up Next -->
-                <include
+                <!-- TODO Music Player -->
+                <fragment
+                    android:id="@+id/music_screen_msf"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content" />
 
-                    <tag
-                        android:id="@id/tag_bottom_sheet_draggable"
-                        android:value="true" />
-
-                </include>
-
-                <LinearLayout
+                <com.kam.musicplayer.view.customview.BottomSheetView
+                    android:id="@+id/queue_screen_bsv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
 
-                    <!-- TODO Mini Player for the Queue Screen -->
-                    <fragment
-                        android:id="@+id/queue_mini_mpf"
+                    >
+
+                    <!-- TODO Up Next -->
+                    <include
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        >
 
-                        />
+                        <tag
+                            android:id="@id/tag_bottom_sheet_draggable"
+                            android:value="true" />
 
-                    <TextView
+                    </include>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="24dp"
-                        android:gravity="center"
-                        android:text="@string/up_next"
-                        android:background="@color/up_next_background"/>
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
 
-                    <!-- TODO Queue Fragment -->
-                    <fragment
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
+                        <!-- TODO Mini Player for the Queue Screen -->
+                        <fragment
+                            android:id="@+id/queue_mini_mpf"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
 
-                        />
+                            />
 
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="24dp"
+                            android:gravity="center"
+                            android:text="@string/up_next"
+                            android:background="@color/up_next_background"/>
 
-                </LinearLayout>
+                        <!-- TODO Queue Fragment -->
+                        <fragment
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
 
-            </com.kam.musicplayer.view.customview.BottomSheetView>
+                            />
+
+                    </LinearLayout>
+
+                </com.kam.musicplayer.view.customview.BottomSheetView>
+
+            </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         </com.kam.musicplayer.view.customview.BottomSheetView>
 
