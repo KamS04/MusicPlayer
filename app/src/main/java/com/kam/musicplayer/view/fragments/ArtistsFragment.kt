@@ -1,86 +1,79 @@
 package com.kam.musicplayer.view.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.kam.musicplayer.databinding.FragmentGenericRecyclerBinding
-import com.kam.musicplayer.models.ALBUM_DIFF_CALLBACK
-import com.kam.musicplayer.models.Album
+import com.kam.musicplayer.models.ARTIST_DIFF_CALLBACK
+import com.kam.musicplayer.models.Artist
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.GenericItemsAdapter
 import com.kam.musicplayer.viewmodel.MusicViewModel
 import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
+import java.lang.Exception
 
-/**
- * Fragment for viewing Albums
- */
-class AlbumsFragment : Fragment() {
+class ArtistsFragment : Fragment() {
 
     private val mViewModel: MusicViewModel by viewModels {
         MusicViewModelFactory(requireActivity().musicApplication)
     }
 
-    private lateinit var mAlbumsAdapter: GenericItemsAdapter<Album>
-
     private var _binding: FragmentGenericRecyclerBinding? = null
     private val mBinding: FragmentGenericRecyclerBinding
         get() = _binding ?: throw Exception("Binding must not be accessed before creation or after destruction")
 
-    private var mAlbums: List<Album> = listOf()
+    private lateinit var mArtistsAdapter: GenericItemsAdapter<Artist>
+
+    private var mArtists: List<Artist> = listOf()
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentGenericRecyclerBinding.inflate(inflater, container, false)
         return mBinding.root
     }
 
-    /**
-     * Sets up adapter to [GenericItemsAdapter]
-     * And attaches it to the RecyclerView
-     *
-     * Sets up [GenericItemsAdapter.OnActionListener] as well
-     * Starts observing [MusicViewModel]
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mAlbumsAdapter = GenericItemsAdapter(
+        mArtistsAdapter = GenericItemsAdapter(
             mContext,
-            ALBUM_DIFF_CALLBACK,
+            ARTIST_DIFF_CALLBACK,
             2
-        ) { album ->
+        ) { artist ->
             GenericItemsAdapter.Details(
-                album.name,
-                album.songsCount.toString(),
-                album.coverArt
+                artist.name,
+                artist.songsCount.toString(),
+                artist.coverArt
             )
         }
 
-        mAlbumsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
+        mArtistsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
             override fun onClick(position: Int) {
-                // TODO show Album
+                // TODO Show Artist
             }
         })
 
-        mAlbumsAdapter.attachToRecyclerView(mBinding.listRv)
+        mArtistsAdapter.attachToRecyclerView(mBinding.listRv)
 
-        mViewModel.allAlbums.observe(viewLifecycleOwner) { albums ->
-            mAlbums = albums
-            if (mAlbums.isEmpty()) {
-                mBinding.listRv.visibility = View.GONE
+        mViewModel.allArtists.observe(viewLifecycleOwner) { artists ->
+            mArtists = artists
+            if (mArtists.isEmpty()) {
                 mBinding.emptyArrayTv.visibility = View.VISIBLE
+                mBinding.listRv.visibility = View.GONE
             } else {
-                mBinding.listRv.visibility = View.VISIBLE
                 mBinding.emptyArrayTv.visibility = View.GONE
+                mBinding.listRv.visibility = View.VISIBLE
             }
-            mAlbumsAdapter.submitList(mAlbums)
+
+            mArtistsAdapter.submitList(mArtists)
         }
     }
+
 }

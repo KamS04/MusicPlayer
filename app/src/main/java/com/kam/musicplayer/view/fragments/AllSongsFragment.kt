@@ -115,9 +115,8 @@ class AllSongsFragment : Fragment() {
             } else {
                 mBinding.listRv.visibility = View.VISIBLE
                 mBinding.emptyArrayTv.visibility = View.GONE
-
-                mSongsAdapter.submitList(mAllSongs)
             }
+            mSongsAdapter.submitList(mAllSongs)
         }
     }
 

@@ -8,13 +8,13 @@ data class Album(
     val name: String,
     var songs: List<Song> = listOf()
 ) {
-    val songCount: Int
+    val songsCount: Int
         get() = songs.size
 
     val coverArt: Uri?
         get() = songs.firstOrNull { it.albumArt != null }?.albumArt
 
-    fun getSong(position: Int): Song = songs[position]
+    operator fun get(position: Int): Song = songs[position]
 }
 
 val ALBUM_DIFF_CALLBACK = object : DiffUtil.ItemCallback<Album>() {
@@ -23,7 +23,7 @@ val ALBUM_DIFF_CALLBACK = object : DiffUtil.ItemCallback<Album>() {
     }
 
     override fun areContentsTheSame(oldItem: Album, newItem: Album): Boolean {
-        return oldItem.songCount == newItem.songCount &&
+        return oldItem.songsCount == newItem.songsCount &&
                 oldItem.coverArt == newItem.coverArt
     }
 

@@ -12,7 +12,7 @@ import com.kam.musicplayer.view.adapters.TabsFragmentPagerAdapter
 /**
  * This handles displaying the main data, sort of
  * It is a placeholder that displays the
- * [AllSongsTabFragment], [PlaylistsFragment], [ArtistsFragment], [AlbumsFragment]
+ * [AllSongsFragment], [PlaylistsFragment], [ArtistsFragment], [AlbumsFragment]
  */
 class TabsFragment : Fragment() {
 
