@@ -290,9 +290,12 @@ class MusicPlayerService : LifecycleService() {
         playNextSongInQueue(false)
     }
 
-    /** Goes back 1 song */
+    /** Restarts the song or goes back by 1 song */
     fun skipBackward() {
-        skipToSong(mCurrentPosition.nvalue - 1)
+        if (mCurrentTime.nvalue < 10000)
+            skipToSong(mCurrentPosition.nvalue - 1)
+        else
+            seek(0)
     }
 
     /** Goes forward 1 song */

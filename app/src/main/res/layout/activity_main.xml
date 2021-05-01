@@ -27,7 +27,6 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- TODO Main fragment -->
         <FrameLayout
             android:id="@+id/main_screen_fl"
             android:layout_width="match_parent"
@@ -47,7 +46,9 @@
             <fragment
                 android:id="@+id/mini_mpf"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:name="com.kam.musicplayer.view.fragments.MiniFragmentPlayer"
+                tools:layout="@layout/fragment_mini_player" />
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:id="@+id/queue_screen_cl"
