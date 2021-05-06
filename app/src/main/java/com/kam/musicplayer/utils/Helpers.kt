@@ -4,10 +4,12 @@ import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
@@ -96,3 +98,9 @@ val Fragment.mContext: Context
 
 val Context.layoutInflater: LayoutInflater
     get() = LayoutInflater.from(this)
+
+fun Context.colorFromAttr(@AttrRes attrColor: Int, resolveRefs: Boolean = true): Int {
+    val typedValue = TypedValue()
+    theme.resolveAttribute(attrColor, typedValue, resolveRefs)
+    return typedValue.data
+}

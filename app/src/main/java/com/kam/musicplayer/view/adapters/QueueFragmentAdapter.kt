@@ -6,6 +6,7 @@ import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.kam.musicplayer.R
+import com.kam.musicplayer.utils.colorFromAttr
 
 class QueueFragmentAdapter(
     context: Context,
@@ -54,8 +55,8 @@ class QueueFragmentAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
 
-        val bgColor = if (position == mCurrentSong) R.color.color_current_song else R.color.color_cardview_default
-        holder.mBinding.rootMcv.setCardBackgroundColor(context.getColor(bgColor))
+        val bgColor = if (position == mCurrentSong) R.attr.colorSpecialBackground else R.attr.colorCardBackground
+        holder.mBinding.rootMcv.setCardBackgroundColor(context.colorFromAttr(bgColor))
     }
 
     /**

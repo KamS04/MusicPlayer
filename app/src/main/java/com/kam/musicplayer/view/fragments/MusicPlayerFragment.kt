@@ -10,6 +10,7 @@ import com.kam.musicplayer.R
 import com.kam.musicplayer.databinding.FragmentMusicPlayerBinding
 import com.kam.musicplayer.services.MusicPlayerService
 import com.kam.musicplayer.utils.Utils
+import com.kam.musicplayer.utils.colorFromAttr
 import com.kam.musicplayer.utils.mContext
 
 /**
@@ -52,16 +53,16 @@ class MusicPlayerFragment : Fragment() {
 
                 isRepeatOn.observe(viewLifecycleOwner) { repeat ->
                     mBinding.repeatIb.setColorFilter(
-                        mContext.getColor(
-                            if (repeat) R.color.color_selected else R.color.color_deselected
+                        mContext.colorFromAttr(
+                            if (repeat) R.attr.colorSelected else R.attr.colorDeselected
                         )
                     )
                 }
 
                 isShuffleOn.observe(viewLifecycleOwner) { shuffle ->
                     mBinding.shuffleIb.setColorFilter(
-                        mContext.getColor(
-                            if (shuffle) R.color.color_selected else R.color.color_deselected
+                        mContext.colorFromAttr(
+                            if (shuffle) R.attr.colorSelected else R.attr.colorDeselected
                         )
                     )
                 }
