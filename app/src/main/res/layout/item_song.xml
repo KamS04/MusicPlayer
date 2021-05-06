@@ -5,7 +5,9 @@
     android:id="@+id/root_mcv"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="?colorCardBackground"
+    android:layout_marginBottom="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,6 +36,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:textSize="16sp"
+                android:textColor="?colorPrimaryText"
                 tools:text="%title%" />
 
             <TextView
@@ -42,6 +45,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:textSize="14sp"
+                android:textColor="?colorSecondaryText"
                 tools:text="%artist%" />
 
         </LinearLayout>
@@ -54,7 +58,7 @@
             android:layout_marginHorizontal="8dp"
             android:background="?attr/selectableItemBackground"
             android:padding="16dp"
-            android:tint="#000000"
+            android:tint="?colorPrimaryText"
             android:src="@drawable/ic_kebab" />
 
     </LinearLayout>

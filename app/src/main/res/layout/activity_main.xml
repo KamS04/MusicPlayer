@@ -25,7 +25,8 @@
         android:id="@+id/window_cl"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="?screenBackground">
 
         <FrameLayout
             android:id="@+id/main_screen_fl"
@@ -40,6 +41,7 @@
             android:orientation="vertical"
             app:viewToDrag="@id/mini_mpf"
             app:content="@id/queue_screen_cl"
+            android:background="?screenBackground"
             android:elevation="12dp">
 
             <fragment
@@ -52,7 +54,8 @@
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:id="@+id/queue_screen_cl"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:background="?screenBackground">
 
                 <fragment
                     android:id="@+id/music_screen_msf"
@@ -83,7 +86,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:background="?screenBackground">
 
                         <fragment
                             android:id="@+id/queue_mini_mpf"
@@ -98,7 +102,8 @@
                             android:padding="24dp"
                             android:gravity="center"
                             android:text="@string/up_next"
-                            android:background="@color/up_next_background"/>
+                            android:textColor="?colorPrimaryText"
+                            android:background="?colorSpecialBackground"/>
 
                         <fragment
                             android:layout_width="match_parent"

@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.MusicPlayer" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
+        <item name="colorPrimary">@color/color_red</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
@@ -12,5 +12,27 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+
+        <item name="colorPrimaryText">@color/dark_white</item>
+        <item name="colorSecondaryText">@color/light_grey</item>
+        <item name="colorSpecial">@color/light_blue</item>
+        <item name="screenBackground">@color/light_black</item>
+        <item name="colorCardBackground">@color/darker_grey</item>
+        <item name="colorDeselected">@color/light_grey</item>
+        <item name="colorSelected">@color/light_blue</item>
+        <item name="colorDivider">@color/darker_grey</item>
+        <item name="colorSpecialBackground">@color/dark_blue</item>
+
     </style>
+
+    <style name="AppTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
+    <style name="AppTabLayout" parent="Widget.Design.TabLayout">
+        <item name="tabSelectedTextColor">@color/white</item>
+    </style>
+
 </resources>

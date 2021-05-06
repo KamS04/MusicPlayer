@@ -38,10 +38,14 @@
         android:layout_marginTop="32dp"
         app:layout_constrainedHeight="true"
         android:text="No Songs"
+        android:textSize="22sp"
+        android:textColor="?colorSecondaryText"
+        android:gravity="center_horizontal"
         app:layout_constraintTop_toBottomOf="@id/data_rv"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

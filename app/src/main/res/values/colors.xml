@@ -5,13 +5,27 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="up_next_background">#B69D24</color>
-    <color name="player_buttons_background">#630000</color>
+
     <color name="color_deselected">#A2A2A2</color>
     <color name="color_selected">#0094C1</color>
     <color name="divider_color">#AFAFAF</color>
-    <color name="color_current_song">#9A8000</color>
-    <color name="color_cardview_default">@color/white</color>
+
+    <color name="color_red">#A80101</color>
+
+    <!-- Dark Theme -->
+    <color name="light_black">#121212</color>
+    <color name="darker_grey">#1e1e1e</color>
+
+    <color name="dark_white">#d8d8d8</color>
+    <color name="dark_grey">#6a6a6a</color>
+    
+    <color name="dark_blue">#004B6C</color>
+
+    <!-- Light Theme -->
+    <color name="light_grey">#808080</color>
+    <color name="light_blue">#40c4ff</color>
+
 </resources>

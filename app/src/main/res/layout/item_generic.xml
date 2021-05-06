@@ -6,7 +6,8 @@
     android:id="@+id/main_mcv"
     android:layout_width="@dimen/generic_item_size"
     android:layout_height="wrap_content"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?colorCardBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,6 +28,7 @@
             android:layout_marginTop="4dp"
             android:gravity="end"
             android:textSize="16sp"
+            android:textColor="?colorPrimaryText"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:focusableInTouchMode="true"
@@ -40,6 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             android:layout_marginTop="2dp"
+            android:textColor="?colorSecondaryText"
             android:gravity="end"
             android:textSize="10sp"
             tools:text="%sub heading%" />

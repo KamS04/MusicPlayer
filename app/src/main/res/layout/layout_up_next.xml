@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/up_next_background">
+    android:background="?colorSpecialBackground">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -23,7 +23,7 @@
         android:gravity="center"
         android:textSize="18sp"
         android:layout_gravity="center_horizontal"
-        android:textColor="@color/black"
+        android:textColor="?colorPrimaryText"
         android:layout_marginBottom="16dp" />
 
 </LinearLayout>

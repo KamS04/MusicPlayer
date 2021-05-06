@@ -5,12 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".view.fragments.QueueFragment">
+    tools:context=".view.fragments.QueueFragment"
+    android:background="?screenBackground">
 
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:background="@color/divider_color" />
+        android:background="?colorDivider" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/queue_rv"

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".view.fragments.AllSongsFragment">
+    tools:context=".view.fragments.AllSongsFragment"
+    android:background="?screenBackground">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_rv"
@@ -22,6 +23,7 @@
         android:layout_height="wrap_content"
         android:padding="24dp"
         tools:text="No Songs"
+        android:textColor="?colorPrimaryText"
         android:gravity="center"
         android:textSize="18sp"
         tools:visibility="visible"
