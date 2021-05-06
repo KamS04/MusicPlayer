@@ -12,7 +12,9 @@ import com.kam.musicplayer.models.Album
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.GenericItemsAdapter
+import com.kam.musicplayer.viewmodel.MainActivityViewModel
 import com.kam.musicplayer.viewmodel.MusicViewModel
+import com.kam.musicplayer.viewmodel.factories.MainActivityViewModelFactory
 import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
 
 /**
@@ -22,6 +24,10 @@ class AlbumsFragment : Fragment() {
 
     private val mViewModel: MusicViewModel by viewModels {
         MusicViewModelFactory(requireActivity().musicApplication)
+    }
+
+    private val mMainViewModel: MainActivityViewModel by viewModels {
+        MainActivityViewModelFactory(requireActivity().musicApplication)
     }
 
     private lateinit var mAlbumsAdapter: GenericItemsAdapter<Album>
@@ -65,7 +71,8 @@ class AlbumsFragment : Fragment() {
 
         mAlbumsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
             override fun onClick(position: Int) {
-                // TODO show Album
+                val album = mAlbums[position]
+                mMainViewModel.showAlbum(mViewModel.getAlbum(album.name))
             }
         })
 

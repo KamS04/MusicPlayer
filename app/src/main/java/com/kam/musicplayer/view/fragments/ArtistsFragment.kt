@@ -12,6 +12,7 @@ import com.kam.musicplayer.models.Artist
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.GenericItemsAdapter
+import com.kam.musicplayer.viewmodel.MainActivityViewModel
 import com.kam.musicplayer.viewmodel.MusicViewModel
 import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
 import java.lang.Exception
@@ -19,6 +20,10 @@ import java.lang.Exception
 class ArtistsFragment : Fragment() {
 
     private val mViewModel: MusicViewModel by viewModels {
+        MusicViewModelFactory(requireActivity().musicApplication)
+    }
+
+    private val mMainViewModel: MainActivityViewModel by viewModels {
         MusicViewModelFactory(requireActivity().musicApplication)
     }
 
@@ -56,7 +61,8 @@ class ArtistsFragment : Fragment() {
 
         mArtistsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
             override fun onClick(position: Int) {
-                // TODO Show Artist
+                val artist = mArtists[position]
+                mMainViewModel.showArtist(mViewModel.getArtist(artist.name))
             }
         })
 

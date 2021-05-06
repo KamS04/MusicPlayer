@@ -4,4 +4,5 @@
     <dimen name="generic_item_size">135dp</dimen>
     <dimen name="min_small_btn">24dp</dimen>
     <dimen name="min_large_btn">48dp</dimen>
+    <dimen name="cover_art_max_size">240dp</dimen>
 </resources>

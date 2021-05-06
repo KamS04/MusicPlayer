@@ -1,11 +1,10 @@
-package com.kam.musicplayer.models.database
+package com.kam.musicplayer.models.database.music
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.kam.musicplayer.models.database.songs.MusicDao
 import com.kam.musicplayer.models.entities.Converters
 import com.kam.musicplayer.models.entities.PlaylistInfo
 import com.kam.musicplayer.models.entities.PlaylistSongCrossRef

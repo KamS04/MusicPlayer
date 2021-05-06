@@ -1,6 +1,8 @@
 package com.kam.musicplayer.view.activities
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
@@ -9,11 +11,13 @@ import com.kam.musicplayer.databinding.ActivityMainBinding
 import com.kam.musicplayer.services.MusicPlayerService
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.customview.BottomSheetView
+import com.kam.musicplayer.view.fragments.PlaylistViewer
+import com.kam.musicplayer.view.fragments.StaticDataViewer
 import com.kam.musicplayer.view.fragments.TabsFragment
 import com.kam.musicplayer.viewmodel.MainActivityViewModel
 import com.kam.musicplayer.viewmodel.factories.MainActivityViewModelFactory
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), MainActivityViewModel.DataShower {
 
     private lateinit var mBinding: ActivityMainBinding
 
@@ -24,8 +28,14 @@ class MainActivity : BaseActivity() {
     private lateinit var mTabsFragment: TabsFragment
     private var isTabLayoutBeingShown = false
 
+    private lateinit var mStaticData: StaticDataViewer
+    private lateinit var mPlaylistViewer: PlaylistViewer
+
     private var isMusicScreenShowing = false
     private var isQueueScreenShowing = false
+
+    private val canSwitch: Boolean
+        get() = !isMusicScreenShowing && !isQueueScreenShowing
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +45,12 @@ class MainActivity : BaseActivity() {
         setSupportActionBar(mBinding.toolbarMt)
 
         mTabsFragment = TabsFragment()
+        mStaticData = StaticDataViewer()
+        mPlaylistViewer = PlaylistViewer()
+
+        loadContentFragment(mTabsFragment, true)
+
+        mViewModel.setDataShower(this)
 
         mViewModel.title.observe(this) {
             supportActionBar?.title = it
@@ -74,8 +90,11 @@ class MainActivity : BaseActivity() {
                 }
             }
         })
+    }
 
-        loadTabLayout()
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_options, menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -83,12 +102,19 @@ class MainActivity : BaseActivity() {
             android.R.id.home -> {
                 onBackPressed()
             }
+            R.id.kill_service -> {
+                stopService(Intent(this, MusicPlayerService::class.java))
+            }
         }
         return true
     }
 
-    private fun loadTabLayout() {
-        loadContentFragment(mTabsFragment, true)
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+        if (!isTabLayoutBeingShown) {
+            mViewModel.returnHome()
+        }
     }
 
     private fun loadContentFragment(fragment: Fragment, isTabLayout: Boolean = false) {
@@ -98,6 +124,23 @@ class MainActivity : BaseActivity() {
         }.commit()
 
         isTabLayoutBeingShown = isTabLayout
+        supportActionBar?.setDisplayHomeAsUpEnabled(!isTabLayout)
+    }
+
+    override fun receiveControl() {
+        loadContentFragment(mTabsFragment, true)
+    }
+
+    override fun showStaticData(): Boolean {
+        if (canSwitch)
+            loadContentFragment(mStaticData)
+        return canSwitch
+    }
+
+    override fun showPlaylist(): Boolean {
+        if (canSwitch)
+            loadContentFragment(mPlaylistViewer)
+        return canSwitch
     }
 
 

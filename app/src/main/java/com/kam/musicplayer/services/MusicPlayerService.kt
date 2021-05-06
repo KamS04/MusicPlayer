@@ -1,18 +1,15 @@
 package com.kam.musicplayer.services
 
 import android.content.*
-import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.support.v4.media.session.MediaSessionCompat
 import android.telephony.TelephonyManager
 import android.util.Log
-import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
+import androidx.lifecycle.*
 import com.kam.musicplayer.utils.between
 import com.kam.musicplayer.models.entities.Song
+import com.kam.musicplayer.services.notification.MusicNotificationBuilder
 import com.kam.musicplayer.utils.nvalue
 import com.kam.musicplayer.utils.Constants
 import com.kam.musicplayer.utils.Repeater
@@ -23,6 +20,7 @@ import kotlin.random.Random
 class MusicPlayerService : LifecycleService() {
 
     private var mediaPlayer: MediaPlayer? = null
+    private lateinit var mediaSession: MediaSessionCompat
 
     private val sharedPrefs: SharedPreferences?
         get() = applicationContext?.getSharedPreferences(Constants.SHARED_PREFS, Context.MODE_PRIVATE)
@@ -107,16 +105,7 @@ class MusicPlayerService : LifecycleService() {
         Log.i("APS", "Player Service started")
 
         instance = this
-
-        mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                    AudioAttributes
-                            .Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-            )
-            setOnCompletionListener { playNextSongInQueue() }
-        }
+        mediaSession = MediaSessionCompat(this, Constants.MEDIA_SESSION_TAG)
 
         mIsShuffleOn.observe(this) {
             sharedPrefs?.edit()?.putBoolean(Constants.SHUFFLE, it)?.apply()
@@ -131,6 +120,26 @@ class MusicPlayerService : LifecycleService() {
                 clock.start()
             else
                 clock.pause()
+
+            val builder = MusicNotificationBuilder(this, mediaSession)
+                    .setCancellable(false)
+                    .setPlaying(it)
+
+            if (mCurrentSong.value != null)
+                builder.setSong(mCurrentSong.value!!)
+
+            startForeground(Constants.NOTIFICATION_ID, builder.build())
+        }
+
+        mCurrentSong.observe(this) { song ->
+            val builder = MusicNotificationBuilder(this, mediaSession)
+                    .setCancellable(false)
+                    .setPlaying(mIsPlaying.nvalue)
+
+            if (song != null)
+                builder.setSong(song)
+
+            startForeground(Constants.NOTIFICATION_ID, builder.build())
         }
 
         hasTasks.observe(this) {
@@ -151,11 +160,19 @@ class MusicPlayerService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        // TODO call the following
-        //startForeground(id, notification)
-        // This will make it a foreground service
-
+        startForeground(
+            Constants.NOTIFICATION_ID, MusicNotificationBuilder(this, mediaSession)
+                .setCancellable(false)
+                .setPlaying(false)
+                .build()
+        )
         return START_NOT_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        mediaPlayer?.release()
     }
 
     //endregion
@@ -354,7 +371,9 @@ class MusicPlayerService : LifecycleService() {
      * to another notifies [queueChangeListeners] as necessary
      */
     fun moveSong(from: Int, to: Int) {
-        mCurrentQueue.nvalue.moveElement(from, to)
+        val nQueue = mCurrentQueue.nvalue.toMutableList()
+        nQueue.moveElement(from, to)
+        mCurrentQueue.value = nQueue
 
         mCurrentPosition.value = mCurrentQueue.nvalue.indexOf(mCurrentSong.nvalue)
     }
@@ -400,6 +419,8 @@ class MusicPlayerService : LifecycleService() {
 
     //endregion
 
+
+
     companion object {
         /** static instance */
         private var instance: MusicPlayerService? = null
@@ -413,11 +434,25 @@ class MusicPlayerService : LifecycleService() {
         val isServiceRunning: Boolean
             get() = instance != null
 
+        private var isStartSent = false
+
         /**
          * Service will subscribe here to make sure listen
          * for new tasks
          */
         private val hasTasks: MutableLiveData<Boolean> = MutableLiveData(false)
+
+        private fun sendStart(context: Context) {
+            if (!isStartSent) {
+                val intent = Intent(context, MusicPlayerService::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+                isStartSent = true
+            }
+        }
 
         /**
          * runs the [action] instantaneously if
@@ -432,7 +467,9 @@ class MusicPlayerService : LifecycleService() {
          * adds the task to the queue and sets [hasTasks] to true
          * the service will perform them
          */
-        fun scheduleTask(lifecycleOwner: LifecycleOwner, action: (service: MusicPlayerService) -> Unit) {
+        fun scheduleTask(context: Context, lifecycleOwner: LifecycleOwner, action: (service: MusicPlayerService) -> Unit) {
+            if (!isServiceRunning && !isStartSent)
+                sendStart(context)
             queuedTasks.add( OnStartTask(lifecycleOwner, action) )
             hasTasks.value = true
         }
@@ -440,14 +477,16 @@ class MusicPlayerService : LifecycleService() {
         /**
          * Creates a new session
          */
-        fun createSession() : ScheduleSession {
-            return ScheduleSession()
+        fun createSession(context: Context) : ScheduleSession {
+            return ScheduleSession(context)
         }
 
         /**
          * runs all tasks added to the [session]
          */
         fun scheduleSession(session: ScheduleSession) {
+            if (!isServiceRunning && !isStartSent)
+                sendStart(session.context)
             queuedTasks.addAll( session.tasks.values )
             hasTasks.value = true
         }
@@ -461,7 +500,7 @@ class MusicPlayerService : LifecycleService() {
         /**
          * Schedule class to run tasks in batches
          */
-        class ScheduleSession() {
+        class ScheduleSession(val context: Context) {
             /**
              * holds tasks in key value pairs of Ids
              * this way we can edit or delete them

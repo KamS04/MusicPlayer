@@ -1,4 +1,4 @@
-package com.kam.musicplayer.models.database.songs
+package com.kam.musicplayer.models.database.music
 
 import androidx.room.*
 import com.kam.musicplayer.models.entities.Playlist
@@ -17,12 +17,20 @@ interface MusicDao {
     @Delete
     suspend fun deleteSong(song: Song)
 
+
     @Transaction
     @Query("SELECT * FROM PlaylistInfo")
     fun getAllPlaylists(): Flow<List<Playlist>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUpdatePlaylist(playlist: Playlist)
+    @Transaction
+    @Query("SELECT * FROM PlaylistInfo WHERE id = :id")
+    fun getPlaylist(id: Long): Flow<Playlist>
+
+    @Insert
+    suspend fun insertPlaylist(playlist: Playlist)
+
+    @Update
+    suspend fun updatePlaylist(playlist: Playlist)
 
     @Delete
     suspend fun deletePlaylist(playlist: Playlist)

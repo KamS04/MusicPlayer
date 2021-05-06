@@ -6,8 +6,8 @@ import androidx.room.*
 
 @Entity
 data class PlaylistInfo(
-    @PrimaryKey val id: Long,
-    @ColumnInfo val name: String
+    @ColumnInfo var name: String,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
 )
 
 @Entity(primaryKeys = ["playlistId", "songId"])
@@ -23,7 +23,7 @@ data class Playlist(
         entityColumn = "songId",
         associateBy = Junction(PlaylistSongCrossRef::class)
     )
-    val songs: List<Song>
+    val songs: MutableList<Song>
 ) {
     val songsCount: Int
         get() = songs.size

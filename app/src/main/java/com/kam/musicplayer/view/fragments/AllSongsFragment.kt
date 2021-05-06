@@ -15,6 +15,8 @@ import com.kam.musicplayer.services.MusicPlayerService
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.SongsAdapter
+import com.kam.musicplayer.view.dialogs.CreatePlaylistBuilder
+import com.kam.musicplayer.view.dialogs.PickPlaylistBuilder
 import com.kam.musicplayer.viewmodel.MusicViewModel
 import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
 
@@ -75,21 +77,29 @@ class AllSongsFragment : Fragment() {
                     when (menuItem.itemId) {
                         R.id.play -> {
                             onClick(position)
-                            true
                         }
                         R.id.play_next -> {
                             MusicPlayerService.run {
                                 it.playNext(mAllSongs[position])
                             }
-                            true
                         }
                         R.id.add_to_playlist -> {
                             val song = mAllSongs[position]
-                            // TODO create Playlist dialog
-                            true
+
+                            PickPlaylistBuilder(mContext)
+                                .setPlaylists(mMusicViewModel.allPlaylists.value ?: listOf())
+                                .setOnSelected { playlist ->
+                                    playlist.songs.add(song)
+                                    mMusicViewModel.updatePlaylist(playlist)
+                                }.setRequestCreate {
+                                    CreatePlaylistBuilder(mContext)
+                                        .setOnOk { name ->
+                                            mMusicViewModel.createPlaylist(name, song)
+                                        }.createDialog().show()
+                                }.createDialog().show()
                         }
-                        else -> false
                     }
+                    true
                 }
 
                 popup.show()

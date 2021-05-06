@@ -34,16 +34,22 @@ val SONG_DIFF_CALLBACK = object : DiffUtil.ItemCallback<Song>() {
         if (oldItem.artist != newItem.artist)
             return false
 
-        if (oldItem.album != newItem.album)
-            return false
-
         if (oldItem.albumArt != newItem.albumArt)
             return false
 
-        if (oldItem.path != newItem.path)
-            return false
-
         return true
+    }
+
+}
+
+object SongDiff {
+
+    fun areContentsTheSameDeep(oldItem: Song, newItem: Song): Boolean {
+        return oldItem.name == newItem.name &&
+                oldItem.artist == newItem.artist &&
+                oldItem.album == newItem.album &&
+                oldItem.albumArt == newItem.albumArt &&
+                oldItem.path == newItem.path
     }
 
 }

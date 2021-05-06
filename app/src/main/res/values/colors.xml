@@ -7,5 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="up_next_background">#004353</color>
+    <color name="up_next_background">#B69D24</color>
+    <color name="player_buttons_background">#630000</color>
+    <color name="color_deselected">#A2A2A2</color>
+    <color name="color_selected">#0094C1</color>
+    <color name="divider_color">#AFAFAF</color>
+    <color name="color_current_song">#9A8000</color>
+    <color name="color_cardview_default">@color/white</color>
 </resources>

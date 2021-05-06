@@ -17,7 +17,7 @@ import com.kam.musicplayer.models.entities.Song
 import com.kam.musicplayer.utils.Utils
 
 open class SongsAdapter(
-    private val context: Context,
+    protected val context: Context,
     protected val optionsIcon: Int? = null,
 ) : ListAdapter<Song, SongsAdapter.ViewHolder>(SONG_DIFF_CALLBACK) {
 
@@ -76,7 +76,7 @@ open class SongsAdapter(
         recyclerView.adapter = this
     }
 
-    fun setOnActionListener(listener: OnActionListener) {
+    open fun setOnActionListener(listener: OnActionListener) {
         mOnActionListener = listener
     }
 

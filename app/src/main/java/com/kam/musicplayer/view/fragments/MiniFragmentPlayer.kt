@@ -33,7 +33,7 @@ class MiniFragmentPlayer : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        MusicPlayerService.scheduleTask(viewLifecycleOwner) { service ->
+        MusicPlayerService.scheduleTask(mContext, viewLifecycleOwner) { service ->
 
             service.currentSong.observe(viewLifecycleOwner) { song ->
                 song?.let {

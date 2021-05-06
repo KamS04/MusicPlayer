@@ -15,13 +15,21 @@ import com.kam.musicplayer.models.entities.Playlist
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.GenericItemsAdapter
+import com.kam.musicplayer.view.dialogs.CreatePlaylistBuilder
+import com.kam.musicplayer.view.dialogs.RenamePlaylistBuilder
+import com.kam.musicplayer.viewmodel.MainActivityViewModel
 import com.kam.musicplayer.viewmodel.MusicViewModel
+import com.kam.musicplayer.viewmodel.factories.MainActivityViewModelFactory
 import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
 
 class PlaylistsFragment : Fragment() {
 
     private val mViewModel: MusicViewModel by viewModels {
         MusicViewModelFactory(requireActivity().musicApplication)
+    }
+
+    private val mMainViewModel: MainActivityViewModel by viewModels {
+        MainActivityViewModelFactory(requireActivity().musicApplication)
     }
 
     private var _binding: FragmentPlaylistBinding? = null
@@ -54,7 +62,7 @@ class PlaylistsFragment : Fragment() {
 
         mPlaylistsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
             override fun onClick(position: Int) {
-                // TODO show Playlist
+                mMainViewModel.showPlaylist(mViewModel.getPlaylist(mPlaylists[position].info.id))
             }
 
             override fun onLongClick(viewHolder: GenericItemsAdapter.ViewHolder) {
@@ -64,7 +72,14 @@ class PlaylistsFragment : Fragment() {
                     setOnMenuItemClickListener {
                         when(it.itemId) {
                             R.id.rename_playlist -> {
-                                // TODO Rename Dialog
+                                val playlist = mPlaylists[viewHolder.adapterPosition]
+
+                                RenamePlaylistBuilder(mContext)
+                                    .setOldName(playlist.info.name)
+                                    .addOnOk { newName ->
+                                        playlist.info.name = newName
+                                        mViewModel.updatePlaylist(playlist)
+                                    }.createDialog().show()
                             }
                             R.id.delete_playlist -> {
                                 val position = viewHolder.adapterPosition
@@ -97,7 +112,10 @@ class PlaylistsFragment : Fragment() {
         }
 
         mBinding.addPlaylistFab.setOnClickListener { v ->
-            // TODO create playlist dialog
+            CreatePlaylistBuilder(mContext)
+                .setOnOk { name ->
+                    mViewModel.createPlaylist(name)
+                }.createDialog().show()
         }
     }
 

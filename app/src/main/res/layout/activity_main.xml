@@ -38,11 +38,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-
-
+            app:viewToDrag="@id/mini_mpf"
+            app:content="@id/queue_screen_cl"
             android:elevation="12dp">
 
-            <!-- TODO Mini Music Player -->
             <fragment
                 android:id="@+id/mini_mpf"
                 android:layout_width="match_parent"
@@ -55,25 +54,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <!-- TODO Music Player -->
                 <fragment
                     android:id="@+id/music_screen_msf"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:name="com.kam.musicplayer.view.fragments.MusicPlayerFragment"
+                    tools:layout="@layout/fragment_music_player" />
 
                 <com.kam.musicplayer.view.customview.BottomSheetView
                     android:id="@+id/queue_screen_bsv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
+                    app:viewToDrag="@id/queue_up_next">
 
-                    >
-
-                    <!-- TODO Up Next -->
                     <include
+                        android:id="@+id/queue_up_next"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        >
+                        layout="@layout/layout_up_next">
 
                         <tag
                             android:id="@id/tag_bottom_sheet_draggable"
@@ -86,13 +85,12 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical">
 
-                        <!-- TODO Mini Player for the Queue Screen -->
                         <fragment
                             android:id="@+id/queue_mini_mpf"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-
-                            />
+                            android:name="com.kam.musicplayer.view.fragments.MiniFragmentPlayer"
+                            tools:layout="@layout/fragment_mini_player" />
 
                         <TextView
                             android:layout_width="match_parent"
@@ -102,13 +100,12 @@
                             android:text="@string/up_next"
                             android:background="@color/up_next_background"/>
 
-                        <!-- TODO Queue Fragment -->
                         <fragment
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="1"
-
-                            />
+                            android:name="com.kam.musicplayer.view.fragments.QueueFragment"
+                            tools:layout="@layout/fragment_queue" />
 
                     </LinearLayout>
 

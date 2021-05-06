@@ -7,56 +7,36 @@ import com.kam.musicplayer.models.database.MusicRepository
 import com.kam.musicplayer.models.entities.Playlist
 import com.kam.musicplayer.models.entities.Song
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.collect
 
 class MusicViewModel(private val repository: MusicRepository) : ViewModel() {
 
     val allSongs: LiveData<List<Song>> = repository.allSongs.asLiveData()
 
-    private val _allAlbums: MutableLiveData<List<Album>> = MutableLiveData(listOf())
-    val allAlbums: LiveData<List<Album>>
-        get() = _allAlbums
+    val allAlbums: LiveData<List<Album>> = repository.allAlbums.asLiveData()
 
-    private val _allArtists: MutableLiveData<List<Artist>> = MutableLiveData(listOf())
-    val allArtists: LiveData<List<Artist>>
-        get() = _allArtists
+    val allArtists: LiveData<List<Artist>> = repository.allArtists.asLiveData()
 
     val allPlaylists: LiveData<List<Playlist>> = repository.allPlaylists.asLiveData()
 
-    fun deletePlaylist(playlist: Playlist) {
-        viewModelScope.launch {
-            repository.deletePlaylist(playlist)
-        }
+    fun getAlbum(name: String): LiveData<Album> = repository.getAlbum(name).asLiveData()
+
+    fun getArtist(name: String): LiveData<Artist> = repository.getArtist(name).asLiveData()
+
+    fun getPlaylist(id: Long): LiveData<Playlist> = repository.getPlaylist(id).asLiveData()
+
+    fun createPlaylist(name: String, vararg songs: Song) = viewModelScope.launch {
+        repository.createPlaylist(name, *songs)
     }
 
-    init {
-        viewModelScope.launch {
-            allSongs.asFlow().collect { songs ->
-                _allAlbums.value = songs.asSequence()
-                    .filter { it.album.isNotEmpty() }
-                    .map { it.album }
-                    .distinct()
-                    .map { albumName ->
-                        Album(
-                            albumName,
-                            songs.filter { it.album == albumName }
-                        )
-                    }.sortedBy { it.name }
-                    .toList()
-
-                _allArtists.value = songs.asSequence()
-                    .filter { it.artist.isNotEmpty() }
-                    .map { it.artist }
-                    .distinct()
-                    .map { artist ->
-                        Artist(
-                            artist,
-                            songs.filter { it.artist == artist }
-                        )
-                    }.sortedBy { it.name }
-                    .toList()
-            }
-        }
+    fun updatePlaylist(playlist: Playlist) = viewModelScope.launch {
+        repository.updatePlaylist(playlist)
     }
 
+    fun deletePlaylist(playlist: Playlist) = viewModelScope.launch {
+        repository.deletePlaylist(playlist)
+    }
+
+    fun refreshSongs() = viewModelScope.launch {
+        repository.refreshSongs()
+    }
 }
