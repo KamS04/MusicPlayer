@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.kam.musicplayer.R
@@ -28,7 +29,7 @@ class PlaylistsFragment : Fragment() {
         MusicViewModelFactory(requireActivity().musicApplication)
     }
 
-    private val mMainViewModel: MainActivityViewModel by viewModels {
+    private val mMainViewModel: MainActivityViewModel by activityViewModels {
         MainActivityViewModelFactory(requireActivity().musicApplication)
     }
 
@@ -62,7 +63,7 @@ class PlaylistsFragment : Fragment() {
 
         mPlaylistsAdapter.setActionListener(object: GenericItemsAdapter.OnActionListener {
             override fun onClick(position: Int) {
-                mMainViewModel.showPlaylist(mViewModel.getPlaylist(mPlaylists[position].info.id))
+                mMainViewModel.showPlaylist(mViewModel.getPlaylist(mPlaylists[position].info.playlistId))
             }
 
             override fun onLongClick(viewHolder: GenericItemsAdapter.ViewHolder) {
@@ -72,17 +73,16 @@ class PlaylistsFragment : Fragment() {
                     setOnMenuItemClickListener {
                         when(it.itemId) {
                             R.id.rename_playlist -> {
-                                val playlist = mPlaylists[viewHolder.adapterPosition]
+                                val playlist = mPlaylists[viewHolder.bindingAdapterPosition]
 
                                 RenamePlaylistBuilder(mContext)
                                     .setOldName(playlist.info.name)
                                     .addOnOk { newName ->
-                                        playlist.info.name = newName
-                                        mViewModel.updatePlaylist(playlist)
+                                        mViewModel.renamePlaylist(playlist, newName)
                                     }.createDialog().show()
                             }
                             R.id.delete_playlist -> {
-                                val position = viewHolder.adapterPosition
+                                val position = viewHolder.bindingAdapterPosition
 
                                 if (position != RecyclerView.NO_POSITION)
                                     mViewModel.deletePlaylist(mPlaylists[position])
@@ -111,7 +111,7 @@ class PlaylistsFragment : Fragment() {
             mPlaylistsAdapter.submitList(mPlaylists)
         }
 
-        mBinding.addPlaylistFab.setOnClickListener { v ->
+        mBinding.addPlaylistFab.setOnClickListener { _ ->
             CreatePlaylistBuilder(mContext)
                 .setOnOk { name ->
                     mViewModel.createPlaylist(name)

@@ -16,7 +16,7 @@ object Constants {
 
     const val SHARED_PREFS = "com.kam.musicplayer.SHARED_PREFS"
     const val SHUFFLE = "com.kam.musicplayer.SHUFFLE"
-    const val REPEAT = "com.kam.musicplayer.SHUFFLE"
+    const val REPEAT = "com.kam.musicplayer.REPEAT"
 
     const val READ_STORAGE_PERMISSION_CODE = 1
     const val READ_PHONE_STATE_PERMISSION_CODE = 2

@@ -10,6 +10,7 @@ import com.kam.musicplayer.application.MusicApplication
 import com.kam.musicplayer.models.Album
 import com.kam.musicplayer.models.Artist
 import com.kam.musicplayer.models.entities.Playlist
+import com.kam.musicplayer.view.fragments.SuperStaticDataViewer
 
 class MainActivityViewModel(private val application: MusicApplication) : ViewModel() {
 
@@ -32,11 +33,20 @@ class MainActivityViewModel(private val application: MusicApplication) : ViewMod
     val isShowingAlbum: LiveData<Boolean>
         get() = _isShowingAlbum
 
+    private val _currentDisplaying: MutableLiveData<SuperStaticDataViewer.DataType> = MutableLiveData(SuperStaticDataViewer.DataType.Artist)
+    val currentlyDisplaying: LiveData<SuperStaticDataViewer.DataType>
+        get() = _currentDisplaying
+
     private val _selectedPlaylist: MutableLiveData<LiveData<Playlist>?> = MutableLiveData(null)
     val selectedPlaylist: LiveData<LiveData<Playlist>?>
         get() = _selectedPlaylist
 
+    private val _playlistToReorder: MutableLiveData<Playlist?> = MutableLiveData(null)
+    val playlistToReorder: LiveData<Playlist?>
+        get() = _playlistToReorder
+
     private var mDataShower: DataShower? = null
+    private var lastStaticTitle = ""
 
     fun clearTitle() {
         _title.value = appName
@@ -44,36 +54,43 @@ class MainActivityViewModel(private val application: MusicApplication) : ViewMod
     }
 
     fun setTitle(controller: Controller, newTitle: String) {
+        if (mController == Controller.Static)
+            lastStaticTitle = title.value ?: ""
+
         if (controller == mController)
             _title.value = newTitle
     }
 
+    fun startReordering(playlist: Playlist) {
+        _playlistToReorder.value = playlist
+        val switched = mDataShower?.showPlaylistReorganizer()
+        if (switched == true)
+            mController = Controller.PlaylistReorganizer
+    }
+
     fun showAlbum(album: LiveData<Album>) {
-        _isShowingAlbum.value = true
+        _currentDisplaying.value = SuperStaticDataViewer.DataType.Album
         _selectedAlbum.value = album
-        if (mController == Controller.Activity) {
-            val switched = mDataShower?.showStaticData()
-            if (switched == true)
-                mController = Controller.Static
-        }
+        switchToStatic()
     }
 
     fun showArtist(artist: LiveData<Artist>) {
-        _isShowingAlbum.value = false
+        _currentDisplaying.value = SuperStaticDataViewer.DataType.Artist
         _selectedArtist.value = artist
-        if (mController == Controller.Activity) {
-            val switched = mDataShower?.showStaticData()
-            if (switched == true)
-                mController = Controller.Static
-        }
+        switchToStatic()
     }
 
     fun showPlaylist(playlist: LiveData<Playlist>) {
+        _currentDisplaying.value = SuperStaticDataViewer.DataType.Playlist
         _selectedPlaylist.value = playlist
-        if (mController == Controller.Activity) {
-            val switched = mDataShower?.showPlaylist()
+        switchToStatic()
+    }
+
+    private fun switchToStatic() {
+        if (mController != Controller.Static) {
+            val switched = mDataShower?.showStaticData()
             if (switched == true)
-                mController = Controller.Playlist
+                mController = Controller.Static
         }
     }
 
@@ -86,28 +103,44 @@ class MainActivityViewModel(private val application: MusicApplication) : ViewMod
                 if (!switched)
                     mController = Controller.Activity
             }
-            Controller.Playlist -> {
-                val switched = mDataShower!!.showPlaylist()
+            Controller.PlaylistReorganizer -> {
+                val switched = dataShower.showPlaylistReorganizer()
                 if (!switched)
                     mController = Controller.Activity
             }
         }
     }
 
-    fun returnHome() {
-        clearTitle()
-        mDataShower?.receiveControl()
+    fun revokeDataShower(shower: DataShower) {
+        if (shower == mDataShower) {
+            mDataShower = null
+            mController = Controller.Activity
+        }
+    }
+
+    fun onBackPressed() {
+        when (mController) {
+            Controller.Static -> {
+                clearTitle()
+                mDataShower?.receiveControl()
+            }
+            Controller.PlaylistReorganizer -> {
+                clearTitle()
+                switchToStatic()
+                setTitle(Controller.Static, lastStaticTitle)
+            }
+        }
     }
 
     enum class Controller {
         Activity,
         Static,
-        Playlist
+        PlaylistReorganizer
     }
 
     interface DataShower {
         fun receiveControl()
         fun showStaticData() : Boolean
-        fun showPlaylist() : Boolean
+        fun showPlaylistReorganizer(): Boolean
     }
 }

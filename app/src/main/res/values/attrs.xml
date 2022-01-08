@@ -10,6 +10,8 @@
     <!-- BottomSheetView Tags -->
     <item name="tag_bottom_sheet_draggable" type="id" />
 
+    <!-- Style Tags -->
+    <attr name="actionBarBackground" format="reference|color" />
     <attr name="colorPrimaryText" format="reference|color" />
     <attr name="colorSecondaryText" format="reference|color" />
 
@@ -17,6 +19,7 @@
 
     <attr name="screenBackground" format="reference|color" />
     <attr name="colorCardBackground" format="reference|color" />
+    <attr name="itemCardBackground" format="reference|color" />
 
     <attr  name="colorDeselected" format="reference|color" />
     <attr  name="colorSelected" format="reference|color" />

@@ -1,6 +1,8 @@
 package com.kam.musicplayer.utils
 
 import android.os.Handler
+import android.os.Looper
+import kotlinx.coroutines.Dispatchers
 
 /**
  * I do not like the name of this.
@@ -48,7 +50,7 @@ abstract class Repeater(interval: Int) {
             if (mHandler != null) {
                 mHandler!!.removeCallbacks(clock)
             } else {
-                mHandler = Handler()
+                mHandler = Handler(Looper.getMainLooper())
             }
 
             isStopped = false

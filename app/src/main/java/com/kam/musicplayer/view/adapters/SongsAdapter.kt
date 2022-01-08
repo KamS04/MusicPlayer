@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -17,14 +16,13 @@ import com.kam.musicplayer.models.entities.Song
 import com.kam.musicplayer.utils.Utils
 
 open class SongsAdapter(
-    protected val context: Context,
     protected val optionsIcon: Int? = null,
 ) : ListAdapter<Song, SongsAdapter.ViewHolder>(SONG_DIFF_CALLBACK) {
 
     private var mOnActionListener: OnActionListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemSongBinding.inflate(LayoutInflater.from(context), parent, false)
+        val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
@@ -40,7 +38,7 @@ open class SongsAdapter(
 
         with(holder.mBinding) {
             root.setOnClickListener {
-                mOnActionListener?.onClick(holder.adapterPosition)
+                mOnActionListener?.onClick(holder.bindingAdapterPosition)
             }
 
             titleTv.text = song.name
@@ -61,7 +59,7 @@ open class SongsAdapter(
             }
 
             song.albumArt?.let {
-                Utils.loadImage(context, coverIv, song.albumArt, R.drawable.ic_placeholder)
+                Utils.loadImage(holder.itemView.context, coverIv, song.albumArt, R.drawable.ic_placeholder)
             }
         }
     }
@@ -72,7 +70,7 @@ open class SongsAdapter(
      */
     open fun attachToRecyclerView(recyclerView: RecyclerView) {
         recyclerView.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            LinearLayoutManager(recyclerView.context, LinearLayoutManager.VERTICAL, false)
         recyclerView.adapter = this
     }
 

@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -30,7 +31,7 @@ import com.kam.musicplayer.viewmodel.factories.MusicViewModelFactory
 
 class StaticDataViewer : Fragment() {
 
-    private val mViewModel: MainActivityViewModel by viewModels {
+    private val mViewModel: MainActivityViewModel by activityViewModels {
         MainActivityViewModelFactory(requireActivity().musicApplication)
     }
 
@@ -83,10 +84,8 @@ class StaticDataViewer : Fragment() {
         }
 
     private fun initializeSongsAdapter() {
-        _songsAdapter = SongsAdapter(
-            mContext,
-            R.drawable.ic_kebab
-        )
+        _songsAdapter = SongsAdapter(R.drawable.ic_kebab)
+
         _songsAdapter!!.setOnActionListener(object: SongsAdapter.OnActionListener {
             override fun onClick(position: Int) {
                 MusicPlayerService.run { it.setQueue(mSongs, mSongs[position]) }
@@ -100,21 +99,20 @@ class StaticDataViewer : Fragment() {
                 popup.setOnMenuItemClickListener {
                     when (it.itemId) {
                         R.id.play -> {
-                            onClick(viewHolder.adapterPosition)
+                            onClick(viewHolder.bindingAdapterPosition)
                         }
                         R.id.play_next -> {
                             val songs = mSongs
                             MusicPlayerService.run { service ->
-                                service.playNext(songs[viewHolder.adapterPosition])
+                                service.playNext(songs[viewHolder.bindingAdapterPosition])
                             }
                         }
                         R.id.add_to_playlist -> {
-                            val song = mSongs[viewHolder.adapterPosition]
+                            val song = mSongs[viewHolder.bindingAdapterPosition]
                             PickPlaylistBuilder(mContext)
-                                .setPlaylists(mMusicModel.allPlaylists.value ?: listOf())
+                                .setPlaylists(mMusicModel.allPlaylistsOnce)
                                 .setOnSelected { playlist ->
-                                    playlist.songs.add(song)
-                                    mMusicModel.updatePlaylist(playlist)
+                                    mMusicModel.addSongsToPlaylist(playlist, song)
                                 }.setRequestCreate {
                                     CreatePlaylistBuilder(mContext)
                                         .setOnOk { name ->
@@ -125,6 +123,8 @@ class StaticDataViewer : Fragment() {
                     }
                     true
                 }
+
+                popup.show()
             }
 
             override fun onOptionTouched(

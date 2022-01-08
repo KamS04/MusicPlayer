@@ -15,7 +15,7 @@
             android:id="@+id/toolbar_mt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            android:theme="@style/ActionBarTheme"
             app:subtitleTextColor="@color/white"
             app:titleTextColor="@color/white" />
 
@@ -40,7 +40,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             app:viewToDrag="@id/mini_mpf"
-            app:content="@id/queue_screen_cl"
+            app:content="@id/music_screen_cl"
             android:background="?screenBackground"
             android:elevation="12dp">
 
@@ -52,7 +52,7 @@
                 tools:layout="@layout/fragment_mini_player" />
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
-                android:id="@+id/queue_screen_cl"
+                android:id="@+id/music_screen_cl"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="?screenBackground">
@@ -69,7 +69,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    app:viewToDrag="@id/queue_up_next">
+                    app:viewToDrag="@id/queue_up_next"
+                    app:content="@id/queue_screen_content">
 
                     <include
                         android:id="@+id/queue_up_next"
@@ -84,6 +85,7 @@
                     </include>
 
                     <LinearLayout
+                        android:id="@+id/queue_screen_content"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"

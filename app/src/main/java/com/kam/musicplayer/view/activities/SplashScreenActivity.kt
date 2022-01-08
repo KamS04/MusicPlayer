@@ -95,7 +95,15 @@ class SplashScreenActivity : AppCompatActivity() {
     private fun beginApp() {
         // startForegroundService(Intent(this, MusicPlayerService::class.java))
         // This isn't required as this will be called automagically once something requests the service
-        startActivity(Intent(this, MainActivity::class.java))
+        startActivity(
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                if (intent.action != null) {
+                    action = intent.action
+                    data = intent.data
+                }
+            }
+        )
         finish()
     }
 }

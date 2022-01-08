@@ -5,13 +5,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.RecyclerView
+import com.kam.musicplayer.R
 import com.kam.musicplayer.databinding.FragmentGenericRecyclerBinding
 import com.kam.musicplayer.models.ALBUM_DIFF_CALLBACK
 import com.kam.musicplayer.models.Album
 import com.kam.musicplayer.utils.mContext
 import com.kam.musicplayer.utils.musicApplication
 import com.kam.musicplayer.view.adapters.GenericItemsAdapter
+import com.kam.musicplayer.view.dialogs.CreatePlaylistBuilder
+import com.kam.musicplayer.view.dialogs.PickPlaylistBuilder
 import com.kam.musicplayer.viewmodel.MainActivityViewModel
 import com.kam.musicplayer.viewmodel.MusicViewModel
 import com.kam.musicplayer.viewmodel.factories.MainActivityViewModelFactory
@@ -26,7 +32,7 @@ class AlbumsFragment : Fragment() {
         MusicViewModelFactory(requireActivity().musicApplication)
     }
 
-    private val mMainViewModel: MainActivityViewModel by viewModels {
+    private val mMainViewModel: MainActivityViewModel by activityViewModels {
         MainActivityViewModelFactory(requireActivity().musicApplication)
     }
 
@@ -73,6 +79,36 @@ class AlbumsFragment : Fragment() {
             override fun onClick(position: Int) {
                 val album = mAlbums[position]
                 mMainViewModel.showAlbum(mViewModel.getAlbum(album.name))
+            }
+
+            override fun onLongClick(viewHolder: GenericItemsAdapter.ViewHolder) {
+                super.onLongClick(viewHolder)
+                val popup = PopupMenu(mContext, viewHolder.itemView)
+                popup.inflate(R.menu.song_group_options)
+
+                popup.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.add_group_to_playlist -> {
+                            if (viewHolder.bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                                val album = mAlbums[viewHolder.bindingAdapterPosition]
+
+                                PickPlaylistBuilder(mContext)
+                                    .setPlaylists(mViewModel.allPlaylistsOnce)
+                                    .setOnSelected { playlist ->
+                                        mViewModel.addSongsToPlaylist(playlist, *album.songs.toTypedArray())
+                                    }.setRequestCreate {
+                                        CreatePlaylistBuilder(mContext)
+                                            .setOnOk { name ->
+                                                mViewModel.createPlaylist(name, *album.songs.toTypedArray())
+                                            }.createDialog().show()
+                                    }.createDialog().show()
+                            }
+                        }
+                    }
+                    true
+                }
+
+                popup.show()
             }
         })
 

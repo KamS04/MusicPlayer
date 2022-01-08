@@ -36,17 +36,23 @@ class MiniFragmentPlayer : Fragment() {
         MusicPlayerService.scheduleTask(mContext, viewLifecycleOwner) { service ->
 
             service.currentSong.observe(viewLifecycleOwner) { song ->
-                song?.let {
-                    activity?.runOnUiThread {
-                        mBinding.titleTv.text = it.name
-                        mBinding.artistTv.text = it.artist
+                activity?.runOnUiThread {
+                    if (song != null) {
+                        activity?.runOnUiThread {
+                            mBinding.titleTv.text = song.name
+                            mBinding.artistTv.text = song.artist
 
-                        Utils.loadImage(
-                            mContext,
-                            mBinding.coverArtIv,
-                            song.albumArt,
-                            R.drawable.ic_placeholder
-                        )
+                            Utils.loadImage(
+                                    mContext,
+                                    mBinding.coverArtIv,
+                                    song.albumArt,
+                                    R.drawable.ic_placeholder
+                            )
+                        }
+                    } else {
+                        mBinding.titleTv.text = ""
+                        mBinding.artistTv.text = ""
+                        mBinding.coverArtIv.setImageResource(R.drawable.ic_placeholder)
                     }
                 }
             }

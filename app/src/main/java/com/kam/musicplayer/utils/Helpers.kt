@@ -79,12 +79,12 @@ fun ViewGroup.getHitViews(ev: MotionEvent): MutableList<View> {
 /**
  * Searches a view to see if it contains a view with an id of [id]
  */
-fun View.getChildById(id: Int): View? {
-    if (id == id)
+fun View.getChildById(idToFind: Int): View? {
+    if (id == idToFind)
         return this
     if (this is ViewGroup) {
         for (child in children) {
-            val get = child.getChildById(id)
+            val get = child.getChildById(idToFind)
             if (get != null) {
                 return get
             }

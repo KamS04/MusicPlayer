@@ -23,8 +23,8 @@ class ItemMoveHelper : ItemTouchHelper.SimpleCallback(
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        mTo = target.adapterPosition
-        recyclerView.adapter?.notifyItemMoved(viewHolder.adapterPosition, mTo)
+        mTo = target.bindingAdapterPosition
+        recyclerView.adapter?.notifyItemMoved(viewHolder.bindingAdapterPosition, mTo)
         return true
     }
 
@@ -36,7 +36,7 @@ class ItemMoveHelper : ItemTouchHelper.SimpleCallback(
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
         viewHolder?.let {
-            mFrom = it.adapterPosition
+            mFrom = it.bindingAdapterPosition
         }
 
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {

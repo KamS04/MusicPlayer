@@ -10,4 +10,5 @@
     <string name="rename_playlist">Rename</string>
     <string name="cancel">Cancel</string>
     <string name="choose_playlist">Choose Playlist</string>
+    <string name="no_songs">No Songs</string>
 </resources>

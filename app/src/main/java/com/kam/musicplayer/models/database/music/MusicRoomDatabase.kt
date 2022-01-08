@@ -5,12 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.kam.musicplayer.models.entities.Converters
-import com.kam.musicplayer.models.entities.PlaylistInfo
-import com.kam.musicplayer.models.entities.PlaylistSongCrossRef
-import com.kam.musicplayer.models.entities.Song
+import com.kam.musicplayer.models.entities.*
 
-@Database(entities = [Song::class, PlaylistInfo::class, PlaylistSongCrossRef::class], version = 1)
+@Database(entities = [Song::class, PlaylistInfo::class, PlaylistSong::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class MusicRoomDatabase : RoomDatabase() {
 

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName="SONGS_TABLE")
 class Song(
-    @PrimaryKey val id: Long,
+    @PrimaryKey val songId: Long,
     @ColumnInfo val name: String,
     @ColumnInfo val path: Uri,
     @ColumnInfo val artist: String,
@@ -19,7 +19,7 @@ class Song(
 val SONG_DIFF_CALLBACK = object : DiffUtil.ItemCallback<Song>() {
 
     override fun areItemsTheSame(oldItem: Song, newItem: Song): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.songId == newItem.songId
     }
 
     /**
@@ -28,16 +28,9 @@ val SONG_DIFF_CALLBACK = object : DiffUtil.ItemCallback<Song>() {
      * So if something did change it will hopefully not have to compare as many members
      */
     override fun areContentsTheSame(oldItem: Song, newItem: Song): Boolean {
-        if (oldItem.name != newItem.name)
-            return false
-
-        if (oldItem.artist != newItem.artist)
-            return false
-
-        if (oldItem.albumArt != newItem.albumArt)
-            return false
-
-        return true
+        return oldItem.name == newItem.name &&
+                oldItem.artist == newItem.artist &&
+                oldItem.albumArt == newItem.albumArt
     }
 
 }

@@ -1,5 +1,7 @@
 package com.kam.musicplayer.models.database
 
+import android.net.Uri
+import android.util.Log
 import androidx.annotation.WorkerThread
 import com.kam.musicplayer.models.Album
 import com.kam.musicplayer.models.Artist
@@ -13,9 +15,21 @@ class MusicRepository(private val scope: CoroutineScope, private val database: M
 
     private val musicDao: MusicDao = database.musicDao()
 
-    val allSongs: Flow<List<Song>> = musicDao.getAllSongs()
+    val allSongs: Flow<List<Song>> = flow {
+        musicDao.getAllSongs().collect { songs ->
+            emit(
+                songs.sortedBy { it.name }
+            )
+        }
+    }
 
-    val allPlaylists: Flow<List<Playlist>> = musicDao.getAllPlaylists()
+    val allPlaylists: Flow<List<Playlist>> = flow {
+        musicDao.getAllPlaylists().collect { playlists ->
+            emit(
+                playlists.sortedBy { it.info.name }
+            )
+        }
+    }
 
     val allAlbums: Flow<List<Album>> = flow {
         allSongs.collect { songs ->
@@ -59,32 +73,41 @@ class MusicRepository(private val scope: CoroutineScope, private val database: M
         }
     }
 
+    @WorkerThread
+    suspend fun getSong(uri: Uri): Song? {
+        return ioDatabase.getSong(uri)
+    }
+
     suspend fun refreshSongs() {
         val newSongs = ioDatabase.refreshAllSongs()
         musicDao.getAllSongs().take(1).collect { oldSongs ->
 
-            val oldSongsMap = oldSongs.map { it.id to it }.toMap()
-            val newSongsMap = newSongs.map { it.id to it }.toMap()
+            val oldSongsMap = oldSongs.map { it.songId to it }.toMap()
+            val newSongsMap = newSongs.map { it.songId to it }.toMap()
 
             val differentSongs = mutableListOf<Song>()
 
             for (newSong in newSongs) {
 
-                val oldSong = oldSongsMap[newSong.id]
-                if (oldSong == null || SongDiff.areContentsTheSameDeep(oldSong, newSong))
+                val oldSong = oldSongsMap[newSong.songId]
+                if (oldSong == null || !SongDiff.areContentsTheSameDeep(oldSong, newSong))
                     differentSongs.add(newSong)
 
             }
 
-            val deletedSongs = oldSongs.filter { newSongsMap[it.id] == null }
+            val deletedSongs = oldSongs.filter { newSongsMap[it.songId] == null }
 
-            differentSongs.forEach {
-                insertUpdateSong(it)
-            }
+            insertUpdateSongs(differentSongs)
 
-            deletedSongs.forEach {
-                deleteSong(it)
-            }
+            deleteSongs(deletedSongs)
+
+//            differentSongs.forEach {
+//                insertUpdateSong(it)
+//            }
+//
+//            deletedSongs.forEach {
+//                deleteSong(it)
+//            }
 
         }
     }
@@ -111,17 +134,22 @@ class MusicRepository(private val scope: CoroutineScope, private val database: M
     }
 
     @WorkerThread
+    suspend fun insertUpdateSongs(songs: List<Song>) {
+        musicDao.insertUpdateSongs(songs)
+    }
+
+    @WorkerThread
     suspend fun deleteSong(song: Song) {
         musicDao.deleteSong(song)
     }
 
-    fun getPlaylist(id: Long): Flow<Playlist> {
-        return musicDao.getPlaylist(id)
+    @WorkerThread
+    suspend fun deleteSongs(song: List<Song>) {
+        musicDao.deleteSongs(song)
     }
 
-    @WorkerThread
-    suspend fun insertPlaylist(playlist: Playlist) {
-        musicDao.insertPlaylist(playlist)
+    fun getPlaylist(id: Long): Flow<Playlist> {
+        return musicDao.getPlaylist(id)
     }
 
     @WorkerThread
@@ -136,12 +164,30 @@ class MusicRepository(private val scope: CoroutineScope, private val database: M
 
     @WorkerThread
     suspend fun createPlaylist(name: String, vararg songs: Song) {
-        val playlist = Playlist(
-                PlaylistInfo(name),
-                songs.toMutableList()
-        )
-        insertPlaylist(playlist)
+        musicDao.insertPlaylist(name, *songs)
     }
 
+    @WorkerThread
+    suspend fun renamePlaylist(playlist: Playlist, newName: String) {
+        musicDao.updatePlaylistInfo(
+                PlaylistInfo(newName, playlist.info.playlistId)
+        )
+    }
+
+    @WorkerThread
+    suspend fun addSongsToPlaylist(playlist: Playlist, vararg songs: Song) {
+        musicDao.addSongsToPlaylist(playlist, *songs)
+    }
+
+    @WorkerThread
+    suspend fun moveSongInPlaylist(playlist: Playlist, from: Int, to: Int) {
+        Log.i("KMUSIC3", "Repository")
+        musicDao.moveSongInPlaylist(playlist, from, to)
+    }
+
+    @WorkerThread
+    suspend fun removeSongFromPlaylist(playlist: Playlist, index: Int) {
+        musicDao.removeSongFromPlaylist(playlist, index)
+    }
 
 }

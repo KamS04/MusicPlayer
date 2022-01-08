@@ -14,8 +14,8 @@ import com.bumptech.glide.Glide
 object Utils {
 
     fun Context.getDimensionInPixels(dimenId: Int): Float {
-        Log.i("DIMENreal", "${resources.getDimension(dimenId)}")
-        Log.i("DIMENfixed", "${resources.getDimension(dimenId) * resources.displayMetrics.density}")
+        //Log.i("DIMENreal", "${resources.getDimension(dimenId)}")
+        //Log.i("DIMENfixed", "${resources.getDimension(dimenId) * resources.displayMetrics.density}")
         return resources.getDimension(dimenId)
     }
 

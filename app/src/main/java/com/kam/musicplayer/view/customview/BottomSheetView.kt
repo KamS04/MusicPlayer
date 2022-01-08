@@ -2,6 +2,7 @@ package com.kam.musicplayer.view.customview
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
@@ -214,6 +215,8 @@ class BottomSheetView(context: Context, attrs: AttributeSet): LinearLayout(conte
     private fun setDraggableView(view: View) {
         view.post {
             mBottomSheetBehavior.peekHeight = view.height
+            //Log.i("BSV", "${view.id}")
+            //Log.i("BSV", "Peek Height ${view::class.java.name} ${view.height}")
             mOnActionListener?.onSetPeekHeight(mBottomSheetBehavior.peekHeight)
         }
     }

@@ -1,6 +1,7 @@
 package com.kam.musicplayer.view.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -36,17 +37,20 @@ class QueueFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mQueueAdapter = QueueFragmentAdapter(mContext, R.drawable.ic_hamburger)
+        mQueueAdapter = QueueFragmentAdapter(R.drawable.ic_hamburger)
 
-        mQueueAdapter.setQueueActionListener(object: QueueFragmentAdapter.OnQueueActionListener {
+        mQueueAdapter.setOnActionListener(object: QueueFragmentAdapter.OnQueueActionListener {
             override fun onClick(position: Int) {
                 MusicPlayerService.run { it.skipToSong(position) }
             }
 
             override fun onMove(from: Int, to: Int) {
+                Log.i("KMUSIC", "$from $to")
                 MusicPlayerService.run { it.moveSong(from, to) }
             }
         })
+
+        mQueueAdapter.attachToRecyclerView(mBinding.queueRv)
 
         MusicPlayerService.scheduleTask(mContext, viewLifecycleOwner) { service ->
             with(service) {
@@ -56,6 +60,7 @@ class QueueFragment : Fragment() {
 
                 currentQueue.observe(viewLifecycleOwner) { queue ->
                     mQueueAdapter.submitList(queue)
+                    mQueueAdapter.notifyDataSetChanged()
                 }
             }
 

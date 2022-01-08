@@ -1,15 +1,16 @@
 package com.kam.musicplayer.view.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.kam.musicplayer.models.entities.Song
 
 class PlaylistSongsAdapter(
-    context: Context,
     optionsIcon: Int,
-) : SongsAdapter(context, optionsIcon) {
+) : SongsAdapter(optionsIcon) {
 
     private var mOnPlaylistActionListener: OnPlayListActionListener? = null
     private var mPlaylistSimpleCallback = ItemMoveHelper()
@@ -22,7 +23,8 @@ class PlaylistSongsAdapter(
             }
 
             override fun onOptionClicked(view: View, viewHolder: ViewHolder) {
-                mOnPlaylistActionListener?.onOptionsClicked(view, viewHolder)
+                //mOnPlaylistActionListener?.onOptionsClicked(view, viewHolder)
+                // Ignored
             }
 
             override fun onOptionTouched(view: View, event: MotionEvent, viewHolder: ViewHolder) {
@@ -33,8 +35,8 @@ class PlaylistSongsAdapter(
         })
 
         mPlaylistSimpleCallback.setOnMoveFunction { from, to ->
+            notifyDataSetChanged()
             mOnPlaylistActionListener?.onMove(from, to)
-            notifyItemMoved(from, to)
         }
     }
 
@@ -59,6 +61,15 @@ class PlaylistSongsAdapter(
      */
     fun setPlaylistActionListener(listener: OnPlayListActionListener) {
         mOnPlaylistActionListener = listener
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        super.onBindViewHolder(holder, position)
+
+        holder.itemView.setOnLongClickListener {
+            mOnPlaylistActionListener?.onOptionsClicked(holder.mBinding.optionsIb, holder)
+            true
+        }
     }
 
     interface OnPlayListActionListener {

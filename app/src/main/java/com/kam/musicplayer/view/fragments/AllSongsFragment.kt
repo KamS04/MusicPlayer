@@ -1,6 +1,7 @@
 package com.kam.musicplayer.view.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -10,6 +11,8 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.viewModels
 import com.kam.musicplayer.R
 import com.kam.musicplayer.databinding.FragmentGenericRecyclerBinding
+import com.kam.musicplayer.databinding.FragmentSwipeRecyclerBinding
+import com.kam.musicplayer.models.entities.Playlist
 import com.kam.musicplayer.models.entities.Song
 import com.kam.musicplayer.services.MusicPlayerService
 import com.kam.musicplayer.utils.mContext
@@ -31,8 +34,8 @@ class AllSongsFragment : Fragment() {
 
     private lateinit var mSongsAdapter: SongsAdapter
 
-    private var _binding: FragmentGenericRecyclerBinding? = null
-    private val mBinding: FragmentGenericRecyclerBinding
+    private var _binding: FragmentSwipeRecyclerBinding? = null
+    private val mBinding: FragmentSwipeRecyclerBinding
         get() = _binding ?: throw Exception("Binding must not be accessed before creation or after destruction")
 
     private var mAllSongs: List<Song> = listOf()
@@ -41,7 +44,7 @@ class AllSongsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentGenericRecyclerBinding.inflate(inflater, container, false)
+        _binding = FragmentSwipeRecyclerBinding.inflate(inflater, container, false)
         return mBinding.root
     }
 
@@ -55,9 +58,9 @@ class AllSongsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mSongsAdapter = SongsAdapter(mContext)
+        mSongsAdapter = SongsAdapter()
 
-        mSongsAdapter.setOnActionListener(object: SongsAdapter.OnActionListener{
+        mSongsAdapter.setOnActionListener(object : SongsAdapter.OnActionListener {
             override fun onClick(position: Int) {
                 MusicPlayerService.run {
                     it.setQueue(
@@ -69,7 +72,7 @@ class AllSongsFragment : Fragment() {
 
             override fun onOptionClicked(view: View, viewHolder: SongsAdapter.ViewHolder) {
                 val popup = PopupMenu(mContext, view)
-                val position = viewHolder.adapterPosition
+                val position = viewHolder.bindingAdapterPosition
 
                 popup.inflate(R.menu.songs_options_menu)
 
@@ -87,10 +90,9 @@ class AllSongsFragment : Fragment() {
                             val song = mAllSongs[position]
 
                             PickPlaylistBuilder(mContext)
-                                .setPlaylists(mMusicViewModel.allPlaylists.value ?: listOf())
+                                .setPlaylists(mMusicViewModel.allPlaylistsOnce)
                                 .setOnSelected { playlist ->
-                                    playlist.songs.add(song)
-                                    mMusicViewModel.updatePlaylist(playlist)
+                                    mMusicViewModel.addSongsToPlaylist(playlist, song)
                                 }.setRequestCreate {
                                     CreatePlaylistBuilder(mContext)
                                         .setOnOk { name ->
@@ -117,16 +119,25 @@ class AllSongsFragment : Fragment() {
 
         mSongsAdapter.attachToRecyclerView(mBinding.listRv)
 
+        mBinding.fsrSwipeSrl.setOnRefreshListener {
+            mMusicViewModel.refreshSongs()
+        }
+
         mMusicViewModel.allSongs.observe(viewLifecycleOwner) { songs ->
+            //Log.i("ALLS", "Song 1 ${songs[0].name}} Song ${songs.size} ${songs.last().name}")
+            if (mBinding.fsrSwipeSrl.isRefreshing)
+                mBinding.fsrSwipeSrl.isRefreshing = false
+
             mAllSongs = songs
             if (mAllSongs.isEmpty()) {
-                mBinding.listRv.visibility = View.GONE
+                mBinding.fsrSwipeSrl.visibility = View.GONE
                 mBinding.emptyArrayTv.visibility = View.VISIBLE
             } else {
-                mBinding.listRv.visibility = View.VISIBLE
+                mBinding.fsrSwipeSrl.visibility = View.VISIBLE
                 mBinding.emptyArrayTv.visibility = View.GONE
             }
-            mSongsAdapter.submitList(mAllSongs)
+            mSongsAdapter.submitList(songs)
+            //Log.i("ALLS", "Submitted List")
         }
     }
 

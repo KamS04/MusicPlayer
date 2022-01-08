@@ -4,6 +4,7 @@ import android.app.Application
 import com.kam.musicplayer.models.database.IODatabase
 import com.kam.musicplayer.models.database.MusicRepository
 import com.kam.musicplayer.models.database.music.MusicRoomDatabase
+import com.kam.musicplayer.services.MusicPlayerService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,6 +25,12 @@ class MusicApplication : Application() {
 
     val repository by lazy {
         MusicRepository(scope, database, ioDatabase)
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        MusicPlayerService.run { it.notifyApplicationState(true) }
     }
 
 }

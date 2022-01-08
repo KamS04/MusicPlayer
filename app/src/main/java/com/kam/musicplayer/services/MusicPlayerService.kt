@@ -1,26 +1,48 @@
 package com.kam.musicplayer.services
 
+import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.*
+import android.graphics.Color
+import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
 import android.telephony.TelephonyManager
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.core.app.NotificationCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.LifecycleOwner
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.kam.musicplayer.R
 import com.kam.musicplayer.utils.between
 import com.kam.musicplayer.models.entities.Song
 import com.kam.musicplayer.services.notification.MusicNotificationBuilder
+import com.kam.musicplayer.services.notification.NotificationConstants
 import com.kam.musicplayer.utils.nvalue
 import com.kam.musicplayer.utils.Constants
 import com.kam.musicplayer.utils.Repeater
 import com.kam.musicplayer.utils.Utils
 import com.kam.musicplayer.utils.Utils.moveElement
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class MusicPlayerService : LifecycleService() {
 
     private var mediaPlayer: MediaPlayer? = null
     private lateinit var mediaSession: MediaSessionCompat
+    private var _lastPauseTime = System.currentTimeMillis()
 
     private val sharedPrefs: SharedPreferences?
         get() = applicationContext?.getSharedPreferences(Constants.SHARED_PREFS, Context.MODE_PRIVATE)
@@ -32,6 +54,8 @@ class MusicPlayerService : LifecycleService() {
      * custom getters or setters many are LiveData so that others
      * can subscribe to them
      */
+
+    private var mIsApplicationRunning: Boolean = true
 
     private val mCurrentTime: MutableLiveData<Int> = MutableLiveData(0)
     val currentTime: LiveData<Int>
@@ -56,11 +80,11 @@ class MusicPlayerService : LifecycleService() {
     val currentSong: LiveData<Song?>
         get() = mCurrentSong
 
-    private val mIsShuffleOn: MutableLiveData<Boolean> = MutableLiveData( sharedPrefs?.getBoolean(Constants.SHUFFLE, false) ?: false )
+    private val mIsShuffleOn: MutableLiveData<Boolean> = MutableLiveData( false)
     val isShuffleOn: LiveData<Boolean>
         get() = mIsShuffleOn
 
-    private val mIsRepeatOn: MutableLiveData<Boolean> = MutableLiveData( sharedPrefs?.getBoolean(Constants.REPEAT, false) ?: false )
+    private val mIsRepeatOn: MutableLiveData<Boolean> = MutableLiveData(  false)
     val isRepeatOn: LiveData<Boolean>
         get() = mIsRepeatOn
 
@@ -88,6 +112,10 @@ class MusicPlayerService : LifecycleService() {
         }
     }
 
+    private lateinit var speakerChangeReceiver: SpeakerChangeReceiver
+    private lateinit var onCallReceiver: OnCallReceiver
+
+    private var lastNotificationBuilder: MusicNotificationBuilder? = null
     //endregion
 
     //region Overrides
@@ -105,7 +133,16 @@ class MusicPlayerService : LifecycleService() {
         Log.i("APS", "Player Service started")
 
         instance = this
+        isStartSent = false
+
+        mediaPlayer = MediaPlayer().apply {
+            setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
+            setOnCompletionListener { playNextSongInQueue() }
+        }
         mediaSession = MediaSessionCompat(this, Constants.MEDIA_SESSION_TAG)
+
+        mIsShuffleOn.value = sharedPrefs?.getBoolean(Constants.SHUFFLE, false) ?: false
+        mIsRepeatOn.value = sharedPrefs?.getBoolean(Constants.REPEAT, false) ?: false
 
         mIsShuffleOn.observe(this) {
             sharedPrefs?.edit()?.putBoolean(Constants.SHUFFLE, it)?.apply()
@@ -118,34 +155,42 @@ class MusicPlayerService : LifecycleService() {
         mIsPlaying.observe(this) {
             if (it)
                 clock.start()
-            else
+            else {
                 clock.pause()
+                _lastPauseTime = System.currentTimeMillis()
+            }
 
             val builder = MusicNotificationBuilder(this, mediaSession)
                     .setCancellable(false)
                     .setPlaying(it)
+                    .setApplicationRunning(mIsApplicationRunning)
 
             if (mCurrentSong.value != null)
                 builder.setSong(mCurrentSong.value!!)
 
-            startForeground(Constants.NOTIFICATION_ID, builder.build())
+            lastNotificationBuilder = builder
+
+            sendNotification(builder)
         }
 
         mCurrentSong.observe(this) { song ->
             val builder = MusicNotificationBuilder(this, mediaSession)
                     .setCancellable(false)
                     .setPlaying(mIsPlaying.nvalue)
+                    .setApplicationRunning(mIsApplicationRunning)
 
             if (song != null)
                 builder.setSong(song)
 
-            startForeground(Constants.NOTIFICATION_ID, builder.build())
+            lastNotificationBuilder = builder
+
+            sendNotification(builder)
         }
 
         hasTasks.observe(this) {
             if (it) {
                 for (task in queuedTasks) {
-                    if (task.lifecycleOwner.lifecycle.currentState != Lifecycle.State.DESTROYED) {
+                    if (task.lifecycleOwner?.lifecycle?.currentState != Lifecycle.State.DESTROYED) {
                         task.action(this)
                     }
                 }
@@ -153,26 +198,49 @@ class MusicPlayerService : LifecycleService() {
             }
         }
 
-        registerReceiver(SpeakerChangeReceiver(), IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
-        registerReceiver(OnCallReceiver(), IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
+        speakerChangeReceiver = SpeakerChangeReceiver()
+        onCallReceiver = OnCallReceiver()
+
+        registerReceiver(speakerChangeReceiver, IntentFilter(AudioManager.ACTION_HEADSET_PLUG))
+        registerReceiver(onCallReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
+
+        startKillWork()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        startForeground(
-            Constants.NOTIFICATION_ID, MusicNotificationBuilder(this, mediaSession)
+        val builder = MusicNotificationBuilder(this, mediaSession)
                 .setCancellable(false)
                 .setPlaying(false)
-                .build()
-        )
+                .setApplicationRunning(mIsApplicationRunning)
+
+        lastNotificationBuilder = builder
+
+        sendNotification(builder)
+
         return START_NOT_STICKY
     }
 
+    @SuppressLint("ApplySharedPref")
     override fun onDestroy() {
         super.onDestroy()
 
         mediaPlayer?.release()
+        unregisterReceiver(speakerChangeReceiver)
+        unregisterReceiver(onCallReceiver)
+
+        clock.pause()
+
+        mCurrentQueue.value = mutableListOf()
+        mCurrentSong.value = null
+        mIsPlaying.value = false
+
+        mCurrentTime.value = 0
+        mCurrentDuration.value = 0
+        mCurrentPosition.value = 0
+
+        instance = null
     }
 
     //endregion
@@ -194,11 +262,17 @@ class MusicPlayerService : LifecycleService() {
 
         mediaPlayer!!.setDataSource(applicationContext, song.path)
 
-        mediaPlayer!!.prepare()
-        mediaPlayer!!.start()
-        mIsPlaying.value = true
-        mCurrentSong.value = song
-        mCurrentDuration.value = mediaPlayer!!.duration
+        try {
+            mediaPlayer!!.prepare()
+            mediaPlayer!!.start()
+            mIsPlaying.value = true
+            mCurrentSong.value = song
+            mCurrentDuration.value = mediaPlayer!!.duration
+        } catch (e: IOException) {
+            Log.w("PREPARE FAILED", "Could not access file ${song.path}")
+            playNextSongInQueue()
+        }
+
     }
 
     /**
@@ -344,7 +418,7 @@ class MusicPlayerService : LifecycleService() {
      * if shuffle is on it puts the chosen song at the start of the [mCurrentQueue]
      * otherwise it leaves it as is
      */
-    fun setQueue(queue: Collection<Song>, song: Song) {
+    fun setQueue(queue: Collection<Song>, song: Song?) {
         pausePlayer()
 
         var nQueue: MutableList<Song> = if (queue is MutableList<Song>) queue else queue.toMutableList()
@@ -353,12 +427,16 @@ class MusicPlayerService : LifecycleService() {
             nQueue = Utils.shuffleList(nQueue) as MutableList<Song>
         }
 
-        mCurrentPosition.value = if (mIsShuffleOn.nvalue) {
-            val pos = nQueue.indexOf(song)
-            Utils.swap(nQueue, 0, pos)
-            0
+        mCurrentPosition.value = if (song != null) {
+            if (mIsShuffleOn.nvalue) {
+                val pos = nQueue.indexOf(song)
+                Utils.swap(nQueue, 0, pos)
+                0
+            } else {
+                nQueue.indexOf(song)
+            }
         } else {
-            nQueue.indexOf(song)
+            0
         }
 
         mCurrentQueue.value = nQueue
@@ -385,6 +463,19 @@ class MusicPlayerService : LifecycleService() {
         val nQueue = mCurrentQueue.nvalue.toMutableList()
         nQueue.add(mCurrentPosition.nvalue + 1, song)
         mCurrentQueue.value = nQueue
+    }
+
+    /**
+     * Used to tell the service whether the application is running
+     * or not. Will then resend the last notification
+      */
+    fun notifyApplicationState(state: Boolean) {
+        mIsApplicationRunning = state
+
+        lastNotificationBuilder?.let { builder ->
+            builder.setApplicationRunning(state)
+            startForeground(Constants.NOTIFICATION_ID, builder.build())
+        }
     }
 
     //endregion
@@ -419,9 +510,60 @@ class MusicPlayerService : LifecycleService() {
 
     //endregion
 
+    private var channelCreated = false
 
+    private fun startKillWork() {
+        val firstRunTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15)
+        val runTime = SimpleDateFormat("HH:mm:ss").format(firstRunTime)
+        Log.i(WORK_TAG, "Work is starting, will run at $runTime")
+
+        val workRequest = PeriodicWorkRequestBuilder<KillWorker>(15, TimeUnit.MINUTES)
+            .build()
+
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
+    }
+
+    fun tryToDie() {
+        if (!mIsPlaying.nvalue) {
+            val timeSincePause = System.currentTimeMillis() - _lastPauseTime
+            if (timeSincePause > TimeUnit.MINUTES.toMillis(LATENT_TIME)) {
+                WorkManager.getInstance(this)
+                    .cancelUniqueWork(WORK_NAME)
+
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.cancel(Constants.NOTIFICATION_ID)
+
+                stopSelf()
+            }
+        }
+    }
+
+    private fun sendNotification(builder: MusicNotificationBuilder) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!channelCreated) {
+                val channel = NotificationChannel(NotificationConstants.CHANNEL_ID, NotificationConstants.CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW)
+                channel.lightColor = Color.BLUE
+                channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+
+                val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                manager.createNotificationChannel(channel)
+                channelCreated = true
+            }
+            startForeground(Constants.NOTIFICATION_ID, builder.build())
+        } else
+             startForeground(Constants.NOTIFICATION_ID, builder.build())
+    }
 
     companion object {
+        val WORK_NAME = "STOP SERVICE WORK"
+        val WORK_TAG = "StopService"
+        val LATENT_TIME = 10L
+
         /** static instance */
         private var instance: MusicPlayerService? = null
 
@@ -475,6 +617,17 @@ class MusicPlayerService : LifecycleService() {
         }
 
         /**
+         *
+         *
+         */
+        fun scheduleNonLeakingTask(context: Context, action: (service: MusicPlayerService) -> Unit) {
+            if (!isServiceRunning && !isStartSent)
+                sendStart(context)
+            queuedTasks.add( OnStartTask(null, action) )
+            hasTasks.value = true
+        }
+
+        /**
          * Creates a new session
          */
         fun createSession(context: Context) : ScheduleSession {
@@ -493,7 +646,7 @@ class MusicPlayerService : LifecycleService() {
 
         /** Simple data class to hold a task and its caller */
         data class OnStartTask(
-            val lifecycleOwner: LifecycleOwner,
+            val lifecycleOwner: LifecycleOwner?,
             val action: (service: MusicPlayerService) -> Unit
         )
 

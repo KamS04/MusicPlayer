@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.textfield.TextInputLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+    android:layout_margin="8dp">
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/playlist_name_et"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_playlist_name"
-        android:imeOptions="actionDone"
-        android:inputType="textAutoComplete" />
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="16dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-</com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/playlist_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_playlist_name"
+            android:imeOptions="actionDone"
+            android:inputType="textAutoComplete" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

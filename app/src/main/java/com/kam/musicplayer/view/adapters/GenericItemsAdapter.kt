@@ -50,9 +50,9 @@ open class GenericItemsAdapter<T>(
             headingTv.text = details.heading
             subHeadingTv.text = details.subHeading
 
-            root.post {
-                Log.i("Item Size", root.width.toString())
-            }
+//            root.post {
+//                Log.i("Item Size", root.width.toString())
+//            }
 
             Utils.loadImage(context, imageIv, details.imageUri, details.placeHolder)
 
@@ -82,7 +82,7 @@ open class GenericItemsAdapter<T>(
 
     interface OnActionListener {
         fun onClick(position: Int)
-        fun onLongClick(viewHolder: ViewHolder {}
+        fun onLongClick(viewHolder: ViewHolder) {}
     }
 
     class ViewHolder(val mBinding: ItemGenericBinding) : RecyclerView.ViewHolder(mBinding.root)
@@ -92,9 +92,9 @@ open class GenericItemsAdapter<T>(
         private val viewSize: Int
     ) :RecyclerView.ItemDecoration() {
 
-        init {
-            Log.i("ViewSize", viewSize.toString())
-        }
+//        init {
+//            Log.i("ViewSize", viewSize.toString())
+//        }
 
         override fun getItemOffsets(
             outRect: Rect,
@@ -104,7 +104,7 @@ open class GenericItemsAdapter<T>(
         ) {
             val margin = parent.width - (spanCount * viewSize)
             val padding = margin / (spanCount + 1)
-            Log.i("Padding", padding.toString())
+            // Log.i("Padding", padding.toString())
             val isLeft = parent.getChildAdapterPosition(view) % spanCount == 0
             outRect.left = padding / ( if (isLeft) 1 else 2)
             outRect.right = padding / ( if (isLeft) 2 else 1)
